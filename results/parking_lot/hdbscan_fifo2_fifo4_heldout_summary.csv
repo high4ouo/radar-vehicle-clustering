@@ -1,0 +1,2 @@
+fifo_frames,matched_cluster_f1,semantic_region_f1,semantic_fragmented_region_rate,runtime_mean_ms,runtime_p95_ms,selection_score
+2,0.8568360773085182,0.917548839539155,0.19548872180451127,35.64323271153847,42.31195655,0.8252616536466764

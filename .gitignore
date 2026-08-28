@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+
+# Raw sensor data is intentionally not part of this repository.
+data/
+*.db3
+*.db3-*
+*.bag
+*.mcap
+*.sqlite3
+
+# Locally regenerated outputs are not versioned.
+outputs/generated/
+*.tmp
