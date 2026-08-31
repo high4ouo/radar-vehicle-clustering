@@ -23,6 +23,7 @@ post-merge on the evaluation machine. FIFO2 is the only configuration below the
 radar's 50 ms frame period at p95.
 
 Machine-readable metrics and tuned profiles are in [`results`](results/).
+All synchronized recordings are in the [`video gallery`](videos/).
 
 ## Reproduce
 
