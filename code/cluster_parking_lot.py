@@ -45,11 +45,10 @@ RUNS = {
 PROFILE = common.Profile(
     fifo_frames=2,  # 현재 프레임과 직전 1프레임을 함께 군집화한다.
     density={
-        "hdbscan_min_cluster_size": 8,  # 군집 하나를 인정할 최소 누적 점 수다.
-        "hdbscan_min_samples_library": 4,  # 점이 밀집했다고 판단할 이웃 수다.
-        "hdbscan_cluster_selection_epsilon": 1.5,  # 1.5 m 이내의 가까운 분할을 줄인다.
+        "hdbscan_min_cluster_size": 10,  # 군집 하나를 인정할 최소 누적 점 수다.
+        "hdbscan_min_samples": 5,  # 외부 hdbscan에는 자기 자신 제외 4로 변환된다.
+        "hdbscan_cluster_selection_epsilon": 2.0,  # 2.0 m 이내의 가까운 분할을 줄인다.
     },
-    backend="sklearn",  # 최종 8/25 영상이 사용한 sklearn.cluster.HDBSCAN이다.
     power_weight=0.25,  # 거리별 Power 점수 1 IQR을 공간 0.25 m처럼 반영한다.
     doppler_weight=0.40,  # Doppler 1 m/s를 공간 0.40 m처럼 반영한다.
     merge=RadarClusterMergeParams(

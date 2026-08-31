@@ -1,0 +1,37 @@
+{
+  "package": "hdbscan",
+  "version": "0.8.44",
+  "sensor": "RETINA-4FN B0 LRR Outdoor Normal CW 50 ms",
+  "project_min_samples_includes_self": true,
+  "profiles": {
+    "parking_realtime": {
+      "fifo_frames": 2,
+      "min_cluster_size": 10,
+      "project_min_samples": 5,
+      "library_min_samples": 4,
+      "cluster_selection_epsilon": 2.0,
+      "power_weight": 0.25,
+      "doppler_weight": 0.4,
+      "post_merge": true
+    },
+    "parking_accuracy": {
+      "fifo_frames": 7,
+      "min_cluster_size": 10,
+      "project_min_samples": 4,
+      "library_min_samples": 3,
+      "cluster_selection_epsilon": 2.0,
+      "power_weight": 0.25,
+      "doppler_weight": 0.4,
+      "post_merge": true
+    },
+    "long_range_accuracy": {
+      "fifo_frames": 7,
+      "min_cluster_size": 3,
+      "project_min_samples": 2,
+      "library_min_samples": 1,
+      "cluster_selection_epsilon": 2.5,
+      "min_abs_doppler_mps": 0.15,
+      "post_merge": false
+    }
+  }
+}

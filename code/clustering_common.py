@@ -22,7 +22,6 @@ BUNDLE = Path(__file__).resolve().parents[1]
 class Profile:
     fifo_frames: int
     density: dict[str, float | int]
-    backend: str  # "sklearn" 또는 외부 hdbscan 패키지를 뜻하는 "contrib"다.
     power_weight: float = 0.0
     doppler_weight: float = 0.0
     merge: RadarClusterMergeParams | None = None
@@ -88,7 +87,6 @@ def cluster_frames(
             method,
             power=stacked_power,
             doppler=stacked_doppler,
-            hdbscan_backend=profile.backend,
             merge_params=profile.merge,
             **profile.density,
         )
@@ -171,7 +169,6 @@ def self_check() -> int:
             "hdbscan_min_samples_library": 1,  # 합성 검사용 밀도 이웃 수다.
             "hdbscan_cluster_selection_epsilon": 0.5,  # 합성 검사용 병합 거리다.
         },
-        backend="sklearn",  # 차량 영상과 같은 sklearn HDBSCAN 경로를 검사한다.
     )
     results = list(cluster_frames(frames, lambda frame: np.ones(3, dtype=bool), profile))
     assert len(results) == 2 and all(len(result["labels"]) == 3 for result in results)

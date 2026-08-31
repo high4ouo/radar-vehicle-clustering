@@ -60,13 +60,12 @@ VEHICLE_TRACKS = {
 }
 
 PROFILE = common.Profile(
-    fifo_frames=5,  # 현재 프레임과 직전 4프레임을 함께 군집화한다.
+    fifo_frames=7,  # 현재 프레임과 직전 6프레임을 함께 군집화한다.
     density={
         "hdbscan_min_cluster_size": 3,  # 군집 하나를 인정할 최소 누적 점 수다.
-        "hdbscan_min_samples_library": 2,  # 점이 밀집했다고 판단할 이웃 수다.
-        "hdbscan_cluster_selection_epsilon": 2.0,  # 2.0 m 이내의 가까운 분할을 줄인다.
+        "hdbscan_min_samples": 2,  # 외부 hdbscan에는 자기 자신 제외 1로 변환된다.
+        "hdbscan_cluster_selection_epsilon": 2.5,  # 2.5 m 이내의 가까운 분할을 줄인다.
     },
-    backend="sklearn",  # 최종 8/26 RViz가 사용한 sklearn.cluster.HDBSCAN이다.
 )
 
 MOVING_DOPPLER_MIN_MPS = 0.15  # 정지 clutter를 버리는 최소 절대 방사속도다.
@@ -128,7 +127,7 @@ def target_selector(track: dict):
 def main() -> int:
     args = arguments()
     if args.self_check:
-        assert PROFILE.fifo_frames == 5
+        assert PROFILE.fifo_frames == 7
         assert PROFILE.density["hdbscan_min_cluster_size"] == 3
         return common.self_check()
     run = RUNS[args.run]

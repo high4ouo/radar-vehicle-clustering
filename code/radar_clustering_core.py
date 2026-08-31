@@ -17,17 +17,10 @@ from typing import Any
 import numpy as np
 from scipy.spatial import cKDTree
 
-# 최종 차량 영상은 sklearn 구현을 사용했다. 외부 구현은 backend 비교용이다.
-from sklearn.cluster import HDBSCAN as SklearnHDBSCAN, OPTICS
+from sklearn.cluster import OPTICS
 from sklearn.mixture import GaussianMixture
 
-try:
-    import hdbscan as contrib_hdbscan
-except Exception as exc:  # optional compiled backend; sklearn must still work
-    contrib_hdbscan = None
-    _CONTRIB_IMPORT_ERROR = exc
-else:
-    _CONTRIB_IMPORT_ERROR = None
+import hdbscan
 
 from radar_cluster_merge import RadarClusterMergeParams, merge_radar_clusters
 
@@ -113,16 +106,12 @@ def relabel_stable(labels: np.ndarray, xyz: np.ndarray) -> np.ndarray:
     return np.asarray([mapping.get(int(label), -1) for label in labels], dtype=int)
 
 
-def hdbscan_library_min_samples(backend: str, project_min_samples: int) -> int:
-    """Translate the project's self-inclusive neighbor count per backend."""
+def hdbscan_library_min_samples(project_min_samples: int) -> int:
+    """Translate the project's self-inclusive count for external hdbscan."""
 
     if project_min_samples < 1:
         raise ValueError("hdbscan_min_samples must be positive")
-    if backend == "sklearn":
-        return int(project_min_samples)
-    if backend == "contrib":
-        return max(1, int(project_min_samples) - 1)
-    raise ValueError(f"unknown HDBSCAN backend: {backend}")
+    return max(1, int(project_min_samples) - 1)
 
 
 def _package_version(package: str) -> str:
@@ -206,7 +195,6 @@ def cluster_frame(
     hdbscan_min_cluster_size: int = 4,
     hdbscan_min_samples: int = 3,
     hdbscan_min_samples_library: int | None = None,
-    hdbscan_backend: str = "contrib",
     hdbscan_cluster_selection_epsilon: float = 0.0,
     optics_min_samples: int = 4,
     optics_max_eps: float = 5.0,
@@ -227,14 +215,9 @@ def cluster_frame(
     started_ns = time.perf_counter_ns()
 
     if base_method == "hdbscan":
-        # 두 HDBSCAN 패키지는 min_samples 정의가 달라 선택한 패키지를 먼저 확정한다.
-        if hdbscan_backend not in {"sklearn", "contrib"}:
-            raise ValueError(f"unknown HDBSCAN backend: {hdbscan_backend}")
         if hdbscan_min_samples_library is None:
-            library_min_samples = hdbscan_library_min_samples(
-                hdbscan_backend, hdbscan_min_samples
-            )
-            min_samples_source = "legacy_project_conversion"
+            library_min_samples = hdbscan_library_min_samples(hdbscan_min_samples)
+            min_samples_source = "project_self_inclusive_conversion"
         else:
             library_min_samples = int(hdbscan_min_samples_library)
             if library_min_samples < 1:
@@ -244,13 +227,9 @@ def cluster_frame(
         if not np.isfinite(epsilon) or epsilon < 0:
             raise ValueError("hdbscan_cluster_selection_epsilon must be finite and non-negative")
         backend_diagnostics = {
-            "hdbscan_backend": hdbscan_backend,
-            "hdbscan_package": (
-                "scikit-learn" if hdbscan_backend == "sklearn" else "hdbscan"
-            ),
-            "hdbscan_package_version": _package_version(
-                "scikit-learn" if hdbscan_backend == "sklearn" else "hdbscan"
-            ),
+            "hdbscan_backend": "external",
+            "hdbscan_package": "hdbscan",
+            "hdbscan_package_version": _package_version("hdbscan"),
             "hdbscan_project_min_samples": int(hdbscan_min_samples),
             "hdbscan_library_min_samples": library_min_samples,
             "hdbscan_min_samples_source": min_samples_source,
@@ -261,7 +240,6 @@ def cluster_frame(
         if len(xyz) < max(hdbscan_min_cluster_size, library_min_samples):
             labels = np.full(len(xyz), -1, dtype=int)
         else:
-            # 두 구현에 동일한 HDBSCAN 밀도값과 EOM 선택 방식을 전달한다.
             common = dict(
                 min_cluster_size=hdbscan_min_cluster_size,
                 min_samples=library_min_samples,
@@ -270,32 +248,23 @@ def cluster_frame(
                 cluster_selection_epsilon=epsilon,
                 allow_single_cluster=True,
             )
-            if hdbscan_backend == "sklearn":
-                model = SklearnHDBSCAN(**common)
-                backend_diagnostics["hdbscan_algorithm"] = "auto"
-            else:
-                if contrib_hdbscan is None:
-                    raise RuntimeError(
-                        "contrib hdbscan backend is unavailable: "
-                        f"{type(_CONTRIB_IMPORT_ERROR).__name__}: {_CONTRIB_IMPORT_ERROR}"
-                    )
-                model = contrib_hdbscan.HDBSCAN(
-                    **common,
-                    algorithm="best",
-                    approx_min_span_tree=True,
-                    core_dist_n_jobs=1,
-                )
-                backend_diagnostics.update(
-                    hdbscan_algorithm="best",
-                    hdbscan_approx_min_span_tree=True,
-                    hdbscan_core_dist_n_jobs=1,
-                    hdbscan_match_reference_implementation=False,
-                )
+            model = hdbscan.HDBSCAN(
+                **common,
+                algorithm="best",
+                approx_min_span_tree=True,
+                core_dist_n_jobs=1,
+            )
+            backend_diagnostics.update(
+                hdbscan_algorithm="best",
+                hdbscan_approx_min_span_tree=True,
+                hdbscan_core_dist_n_jobs=1,
+                hdbscan_match_reference_implementation=False,
+            )
             # 군집 번호는 실행 순서 대신 공간 위치 순서로 다시 매겨 CSV를 안정화한다.
             labels = relabel_stable(model.fit_predict(features), xyz)
         diagnostics = {**empty, **backend_diagnostics}
         detail = (
-            f"{hdbscan_backend} mcs{hdbscan_min_cluster_size}, "
+            f"external-hdbscan mcs{hdbscan_min_cluster_size}, "
             f"library-ms{library_min_samples} ({min_samples_source}), "
             f"epsilon{epsilon:g}, EOM"
         )
@@ -550,24 +519,15 @@ def self_check() -> None:
         hdbscan_min_samples_library=4,
     )
     assert np.all(sparse_labels == -1)
-    assert hdbscan_library_min_samples("sklearn", 3) == 3
-    assert hdbscan_library_min_samples("contrib", 3) == 2
-    try:
-        cluster_frame(xyz, features, "hdbscan", hdbscan_backend="unknown")
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("unknown HDBSCAN backend must fail")
-    if contrib_hdbscan is not None:
-        contrib_labels, diagnostics, _ = cluster_frame(
-            xyz,
-            features,
-            "hdbscan",
-            hdbscan_backend="contrib",
-            hdbscan_cluster_selection_epsilon=0.25,
-        )
-        assert len(contrib_labels) == len(xyz)
-        assert diagnostics["hdbscan_library_min_samples"] == 2
+    assert hdbscan_library_min_samples(3) == 2
+    external_labels, diagnostics, _ = cluster_frame(
+        xyz,
+        features,
+        "hdbscan",
+        hdbscan_cluster_selection_epsilon=0.25,
+    )
+    assert len(external_labels) == len(xyz)
+    assert diagnostics["hdbscan_library_min_samples"] == 2
     assert len(cluster_frame(xyz, features, "optics")[0]) == len(xyz)
 
 
