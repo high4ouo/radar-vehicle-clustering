@@ -16,16 +16,16 @@ Click a preview to open the full MP4.
 
 ## Static vehicle at 150 m
 
-[![Static vehicle at 150 m](../assets/previews/long_range_150m.gif)](long_range/150m_fifo2_fifo7.mp4)
+[![Static vehicle at 150 m](../assets/previews/long_range_150m_clear.gif)](long_range/150m_fifo2_fifo7.mp4)
 
 ## Vehicle at 170 m
 
-[![Vehicle at 170 m](../assets/previews/long_range_170m.gif)](long_range/170m_fifo2_fifo7.mp4)
+[![Vehicle at 170 m](../assets/previews/long_range_170m_clear.gif)](long_range/170m_fifo2_fifo7.mp4)
 
 ## Approaching vehicle, up to about 175 m
 
-[![Approaching vehicle up to about 175 m](../assets/previews/long_range_175m.gif)](long_range/parking_175m.mp4)
+[![Approaching vehicle up to about 175 m](../assets/previews/long_range_175m_clear.gif)](long_range/parking_175m.mp4)
 
 ## Road sequence, about 50-261 m
 
-[![Road sequence from about 50 to 261 m](../assets/previews/long_range_road.gif)](long_range/road_50m_to_261m.mp4)
+[![Road sequence from about 50 to 261 m](../assets/previews/long_range_road_clear.gif)](long_range/road_50m_to_261m.mp4)
