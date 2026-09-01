@@ -5,7 +5,7 @@ and FIFO temporal context using HDBSCAN.
 
 ## Performance
 
-[![Synchronized camera and RViz comparison](assets/previews/main_performance_comparison_4up_vivid.gif)](videos/main_performance_comparison_4up.mp4)
+[![Synchronized camera and RViz comparison](assets/previews/main_performance_comparison_4up_clear.gif)](videos/main_performance_comparison_4up.mp4)
 
 The camera and all three RViz panels show the same 10-second parking-lot
 departure at 10 fps.
