@@ -44,5 +44,8 @@ rosbags are not included.
 
 ## Acknowledgement
 
-This work was supported by the Electronics and Telecommunications Research
-Institute (ETRI).
+This work was supported by the Physical AI Research Institute, Electronics and
+Telecommunications Research Institute (ETRI).
+
+아낌없는 조언과 지원을 해주신 허강현 연구원님, 문 선임연구원님, 김 책임연구원님께
+감사드립니다.
