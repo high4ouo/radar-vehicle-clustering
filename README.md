@@ -47,5 +47,5 @@ rosbags are not included.
 This work was supported by the Physical AI Research Institute, Electronics and
 Telecommunications Research Institute (ETRI).
 
-We gratefully acknowledge Researcher Kang-Hyun Heo, Senior Researcher Moon,
-and Principal Researcher Kim for their generous guidance and support.
+아낌없는 조언과 지원을 해주신 허강현 연구원님, 문OO 선임연구원님, 김OO 책임연구원님께
+감사드립니다.
